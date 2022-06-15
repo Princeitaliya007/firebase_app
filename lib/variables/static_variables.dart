@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-class Global {
-  static User? user;
-}
+User? googleUser;
+String? lastId;

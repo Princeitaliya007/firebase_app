@@ -1,4 +1,3 @@
-import 'package:firebase_app/variables/static_variables.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -63,11 +62,11 @@ class FirebaseHelper {
     return userCredential.user;
   }
 
-  logOut() {
-    firebaseAuth.signOut();
+  Future<void> logOut() async {
+    await firebaseAuth.signOut();
 
-    googleSignIn.signOut();
+    await googleSignIn.signOut();
 
-    Global.user = null;
+    googleUser = null;
   }
 }

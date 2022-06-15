@@ -1,8 +1,10 @@
-import 'package:firebase_app/components/my_drawer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app/helpers/database_helper.dart';
 import 'package:firebase_app/helpers/firebase_helper.dart';
-import 'package:firebase_app/models/employee_model.dart';
 import 'package:flutter/material.dart';
+
+import '../models/employee_model.dart';
+import '../variables/static_variables.dart';
 
 class DashBoard extends StatefulWidget {
   const DashBoard({Key? key}) : super(key: key);
@@ -24,6 +26,8 @@ class _DashBoardState extends State<DashBoard> {
 
   @override
   Widget build(BuildContext context) {
+    dynamic args = ModalRoute.of(context)!.settings.arguments;
+
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -36,13 +40,128 @@ class _DashBoardState extends State<DashBoard> {
               Navigator.of(context)
                   .pushNamedAndRemoveUntil('/', (route) => false);
             },
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.power_settings_new),
           ),
         ],
       ),
-      drawer: const MyDrawer(),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+      drawer: Drawer(
+        child: Column(
+          children: [
+            const SizedBox(
+              height: 50,
+            ),
+            CircleAvatar(
+              backgroundColor: Colors.blue,
+              radius: 50,
+              backgroundImage: (googleUser != null)
+                  ? NetworkImage(googleUser!.photoURL as String)
+                  : null,
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+            (googleUser != null)
+                ? (googleUser!.displayName != null)
+                    ? Text("Name: ${googleUser!.displayName}")
+                    : const Text("Name: not available")
+                : const Text("Name: not available"),
+            (googleUser != null)
+                ? Text("Email: ${googleUser!.email}")
+                : Text("Email: $args"),
+          ],
+        ),
+      ),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('employees').snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text("ERROR=> ${snapshot.error}"),
+            );
+          } else if (snapshot.hasData) {
+            List<QueryDocumentSnapshot> docs = snapshot.data!.docs;
+
+            int max = int.parse(docs[0].id);
+
+            for (int i = 0; i < docs.length; i++) {
+              if (max < int.parse(docs[i].id)) {
+                max = int.parse(docs[i].id);
+              }
+            }
+
+            lastId = (docs.isNotEmpty) ? "$max" : "0";
+
+            return ListView.builder(
+              itemBuilder: (context, i) {
+                Map<String, dynamic> empData =
+                    docs[i].data() as Map<String, dynamic>;
+
+                return Card(
+                  elevation: 3,
+                  child: ListTile(
+                    isThreeLine: true,
+                    leading: Text(docs[i].id),
+                    title: Text("${empData['name']}"),
+                    subtitle: Text("${empData['city']}\n${empData['age']}"),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.edit,
+                            color: Colors.blue,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text(
+                                      "Are you sure want to delete this record"),
+                                  actions: [
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        await FirestoreHelper.firestoreHelper
+                                            .deleteData(id: docs[i].id);
+
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text("Delete"),
+                                    ),
+                                    OutlinedButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text("Cancel"),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              itemCount: docs.length,
+            );
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           showDialog(
             context: context,
@@ -74,6 +193,9 @@ class _DashBoardState extends State<DashBoard> {
                         hintText: "Enter your name",
                       ),
                     ),
+                    const SizedBox(
+                      height: 10,
+                    ),
                     TextFormField(
                       validator: (val) {
                         if (val!.isEmpty) {
@@ -92,6 +214,9 @@ class _DashBoardState extends State<DashBoard> {
                         label: Text("Age"),
                         hintText: "Enter your age",
                       ),
+                    ),
+                    const SizedBox(
+                      height: 10,
                     ),
                     TextFormField(
                       validator: (val) {
@@ -122,15 +247,24 @@ class _DashBoardState extends State<DashBoard> {
                     if (_insertFormKey.currentState!.validate()) {
                       _insertFormKey.currentState!.save();
 
-                      Map<String, dynamic> data = {
-                        'name': name,
-                        'age': age,
-                        'city': city,
-                      };
+                      Employee e = Employee(name: name, age: age, city: city);
 
-                      Employee e = Employee.fromMap(data);
+                      lastId = "${int.parse(lastId!) + 1}";
 
-                      FirestoreHelper.firestoreHelper.insertData(data: e);
+                      FirestoreHelper.firestoreHelper
+                          .insertData(data: e, i: lastId);
+
+                      nameController.clear();
+                      ageController.clear();
+                      cityController.clear();
+
+                      setState(() {
+                        name = "";
+                        age = 0;
+                        city = "";
+                      });
+
+                      Navigator.of(context).pop();
                     }
                   },
                 ),
@@ -154,7 +288,10 @@ class _DashBoardState extends State<DashBoard> {
             ),
           );
         },
-      ),
+        label: const Text('Add'),
+        icon: const Icon(Icons.add),
+        backgroundColor: Colors.pink,
+      ), // showDialog(
     );
   }
 }

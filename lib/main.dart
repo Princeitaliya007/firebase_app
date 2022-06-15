@@ -11,6 +11,9 @@ void main() async {
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+      ),
       // home: HomePage(),
       routes: {
         '/': (context) => HomePage(),

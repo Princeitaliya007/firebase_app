@@ -56,7 +56,8 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.green,
                 );
 
-                Navigator.of(context).pushNamed('dashboard');
+                Navigator.of(context)
+                    .pushNamed('dashboard', arguments: response);
               }
             },
           ),
@@ -98,6 +99,9 @@ class _HomePageState extends State<HomePage> {
                                   email = val!;
                                 });
                               },
+                            ),
+                            const SizedBox(
+                              height: 10,
                             ),
                             TextFormField(
                               decoration: const InputDecoration(
@@ -221,6 +225,9 @@ class _HomePageState extends State<HomePage> {
                                 });
                               },
                             ),
+                            const SizedBox(
+                              height: 10,
+                            ),
                             TextFormField(
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
@@ -283,7 +290,8 @@ class _HomePageState extends State<HomePage> {
                                   text: "Login Successfully...",
                                   color: Colors.green,
                                 );
-                                Navigator.of(context).pushNamed('dashboard');
+                                Navigator.of(context).pushNamed('dashboard',
+                                    arguments: response);
                               }
 
                               emailcontroller.clear();
@@ -295,7 +303,7 @@ class _HomePageState extends State<HomePage> {
                               });
                             }
                           },
-                          child: const Text("Sign up"),
+                          child: const Text("Sign In"),
                         ),
                         OutlinedButton(
                           onPressed: () {
@@ -319,7 +327,7 @@ class _HomePageState extends State<HomePage> {
               User? user =
                   await FirebaseHelper.firebaseHelper.signInWithGoogle();
 
-              Global.user = user;
+              googleUser = user;
 
               Navigator.of(context).pushNamed('dashboard');
             },

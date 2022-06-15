@@ -13,7 +13,7 @@ class FirestoreHelper {
     collectionReference = firestore.collection('employees');
   }
 
-  insertData({required Employee data}) async {
+  insertData({required Employee data, required String? i}) async {
     initDB();
 
     Map<String, dynamic> emp = {
@@ -29,11 +29,33 @@ class FirestoreHelper {
 
     int fetchedId = myId['id'];
 
-    await collectionReference!.doc("$fetchedId").set(emp);
+    // employee collectionReference
+
+    await collectionReference!.doc("$i").set(emp);
 
     await firestore
         .collection('counter')
         .doc('emp_counter')
         .update({'id': ++fetchedId});
   }
+
+  deleteData({required String id}) async {
+    initDB();
+
+    DocumentSnapshot documentSnapshot =
+        await firestore.collection('counter').doc('emp_counter').get();
+
+    Map myId = documentSnapshot.data() as Map;
+
+    int fetchedId = myId['id'];
+
+    await collectionReference!.doc(id).delete();
+
+    await firestore
+        .collection('counter')
+        .doc('emp_counter')
+        .update({'id': --fetchedId});
+  }
+
+  updateData() {}
 }
