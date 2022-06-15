@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../helpers/firebase_helper.dart';
 import '../variables/static_variables.dart';
@@ -286,10 +287,14 @@ class _HomePageState extends State<HomePage> {
                                 );
                                 Navigator.of(context).pop();
                               } else {
-                                scaffoldMessage(
-                                  text: "Login Successfully...",
-                                  color: Colors.green,
-                                );
+                                Fluttertoast.showToast(
+                                    msg: "Login successfully",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.TOP,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.green,
+                                    textColor: Colors.white,
+                                    fontSize: 16.0);
                                 Navigator.of(context).pushNamed('dashboard',
                                     arguments: response);
                               }
