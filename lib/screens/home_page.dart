@@ -289,9 +289,8 @@ class _HomePageState extends State<HomePage> {
                               } else {
                                 Fluttertoast.showToast(
                                     msg: "Login successfully",
-                                    toastLength: Toast.LENGTH_SHORT,
+                                    toastLength: Toast.LENGTH_LONG,
                                     gravity: ToastGravity.TOP,
-                                    timeInSecForIosWeb: 1,
                                     backgroundColor: Colors.green,
                                     textColor: Colors.white,
                                     fontSize: 16.0);
