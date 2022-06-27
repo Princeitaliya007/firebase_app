@@ -57,5 +57,16 @@ class FirestoreHelper {
         .update({'id': --fetchedId});
   }
 
-  updateData() {}
+  updateData({required Employee data, required String? id}) async {
+    initDB();
+
+    DocumentSnapshot documentSnapshot =
+        await firestore.collection('counter').doc('emp_counter').get();
+
+    Map myId = documentSnapshot.data() as Map;
+
+    int fetchedId = myId['id'];
+
+    await collectionReference!.doc(id).delete();
+  }
 }

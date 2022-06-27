@@ -16,8 +16,8 @@ void main() async {
       ),
       // home: HomePage(),
       routes: {
-        '/': (context) => HomePage(),
-        'dashboard': (context) => DashBoard(),
+        '/': (context) => const HomePage(),
+        'dashboard': (context) => const DashBoard(),
       },
     ),
   );

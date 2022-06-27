@@ -15,10 +15,15 @@ class DashBoard extends StatefulWidget {
 
 class _DashBoardState extends State<DashBoard> {
   final GlobalKey<FormState> _insertFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _updateFormKey = GlobalKey<FormState>();
 
   TextEditingController nameController = TextEditingController();
   TextEditingController ageController = TextEditingController();
   TextEditingController cityController = TextEditingController();
+
+  TextEditingController nameUpdateController = TextEditingController();
+  TextEditingController ageUpdateController = TextEditingController();
+  TextEditingController cityUpdateController = TextEditingController();
 
   String? name;
   int? age;
@@ -108,7 +113,140 @@ class _DashBoardState extends State<DashBoard> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            nameUpdateController.text = empData['name'];
+                            ageUpdateController.text =
+                                empData['age'].toString();
+                            cityUpdateController.text = empData['city'];
+
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Center(
+                                  child: Text("Update Data"),
+                                ),
+                                content: Form(
+                                  key: _updateFormKey,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextFormField(
+                                        validator: (val) {
+                                          if (val!.isEmpty) {
+                                            return "Enter your name first.";
+                                          }
+                                          return null;
+                                        },
+                                        onSaved: (val) {
+                                          setState(() {
+                                            name = val;
+                                          });
+                                        },
+                                        controller: nameUpdateController,
+                                        decoration: const InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          label: Text("Name"),
+                                          hintText: "Enter your name",
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      TextFormField(
+                                        validator: (val) {
+                                          if (val!.isEmpty) {
+                                            return "Enter your age first.";
+                                          }
+                                          return null;
+                                        },
+                                        onSaved: (val) {
+                                          setState(() {
+                                            age = int.parse(val!);
+                                          });
+                                        },
+                                        controller: ageUpdateController,
+                                        decoration: const InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          label: Text("Age"),
+                                          hintText: "Enter your age",
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      TextFormField(
+                                        validator: (val) {
+                                          if (val!.isEmpty) {
+                                            return "Enter your city first.";
+                                          }
+                                          return null;
+                                        },
+                                        onSaved: (val) {
+                                          setState(() {
+                                            city = val;
+                                          });
+                                        },
+                                        controller: cityUpdateController,
+                                        decoration: const InputDecoration(
+                                          border: OutlineInputBorder(),
+                                          label: Text("City"),
+                                          hintText: "Enter your city",
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                actions: [
+                                  ElevatedButton(
+                                    child: const Text("Update"),
+                                    onPressed: () {
+                                      if (_updateFormKey.currentState!
+                                          .validate()) {
+                                        _updateFormKey.currentState!.save();
+
+                                        Employee e = Employee(
+                                            name: name, age: age, city: city);
+
+                                        lastId = "${int.parse(lastId!) + 1}";
+
+                                        FirestoreHelper.firestoreHelper
+                                            .updateData(
+                                                data: e, id: docs[i].id);
+
+                                        nameController.clear();
+                                        ageController.clear();
+                                        cityController.clear();
+
+                                        setState(() {
+                                          name = "";
+                                          age = 0;
+                                          city = "";
+                                        });
+
+                                        Navigator.of(context).pop();
+                                      }
+                                    },
+                                  ),
+                                  OutlinedButton(
+                                    child: const Text("Cancel"),
+                                    onPressed: () {
+                                      nameController.clear();
+                                      ageController.clear();
+                                      cityController.clear();
+
+                                      setState(() {
+                                        name = "";
+                                        age = 0;
+                                        city = "";
+                                      });
+
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                           icon: const Icon(
                             Icons.edit,
                             color: Colors.blue,
